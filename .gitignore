@@ -304,3 +304,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+.venv/
+.mypy_cache/

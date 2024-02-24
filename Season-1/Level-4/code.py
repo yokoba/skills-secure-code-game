@@ -1,4 +1,4 @@
-'''
+"""
 Please note:
 
 The first file that you should run in this level is tests.py for database creation, with all tests passing.
@@ -7,7 +7,7 @@ to fail.
 
 If you like to return to the initial state of the database, please delete the database (level-4.db) and run 
 the tests.py again to recreate it.
-'''
+"""
 
 import sqlite3
 import os
@@ -15,6 +15,8 @@ from flask import Flask, request
 
 ### Unrelated to the exercise -- Starts here -- Please ignore
 app = Flask(__name__)
+
+
 @app.route("/")
 def source():
     DB_CRUD_ops().get_stock_info(request.args["input"])
@@ -22,7 +24,10 @@ def source():
     DB_CRUD_ops().update_stock_price(request.args["input"])
     DB_CRUD_ops().exec_multi_query(request.args["input"])
     DB_CRUD_ops().exec_user_script(request.args["input"])
+
+
 ### Unrelated to the exercise -- Ends here -- Please ignore
+
 
 class Connect(object):
 
@@ -35,6 +40,7 @@ class Connect(object):
             print(f"ERROR: {e}")
         return connection
 
+
 class Create(object):
 
     def __init__(self):
@@ -42,29 +48,30 @@ class Create(object):
         try:
             # creates a dummy database inside the folder of this challenge
             path = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(path, 'level-4.db')
+            db_path = os.path.join(path, "level-4.db")
             db_con = con.create_connection(db_path)
             cur = db_con.cursor()
 
             # checks if tables already exist, which will happen when re-running code
             table_fetch = cur.execute(
-                '''
+                """
                 SELECT name 
                 FROM sqlite_master 
                 WHERE type='table'AND name='stocks';
-                ''').fetchall()
+                """
+            ).fetchall()
 
             # if tables do not exist, create them and insert dummy data
             if table_fetch == []:
                 cur.execute(
-                    '''
+                    """
                     CREATE TABLE stocks
                     (date text, symbol text, price real)
-                    ''')
+                    """
+                )
 
                 # inserts dummy data to the 'stocks' table, representing average price on date
-                cur.execute(
-                    "INSERT INTO stocks VALUES ('2022-01-06', 'MSFT', 300.00)")
+                cur.execute("INSERT INTO stocks VALUES ('2022-01-06', 'MSFT', 300.00)")
                 db_con.commit()
 
         except sqlite3.Error as e:
@@ -72,6 +79,7 @@ class Create(object):
 
         finally:
             db_con.close()
+
 
 class DB_CRUD_ops(object):
 
@@ -84,7 +92,7 @@ class DB_CRUD_ops(object):
         con = Connect()
         try:
             path = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(path, 'level-4.db')
+            db_path = os.path.join(path, "level-4.db")
             db_con = con.create_connection(db_path)
             cur = db_con.cursor()
 
@@ -111,6 +119,7 @@ class DB_CRUD_ops(object):
                 query_outcome = cur.fetchall()
                 for result in query_outcome:
                     res += "[RESULT] " + str(result)
+
             return res
 
         except sqlite3.Error as e:
@@ -128,14 +137,23 @@ class DB_CRUD_ops(object):
         con = Connect()
         try:
             path = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(path, 'level-4.db')
+            db_path = os.path.join(path, "level-4.db")
             db_con = con.create_connection(db_path)
             cur = db_con.cursor()
+
+            from rich import print
+
+            queries = stock_symbol.split(";")
+            stock_symbol = queries[0]
+
+            if len(queries) > 1 and stock_symbol[-1] == "'":
+                stock_symbol = stock_symbol[:-1]
 
             res = "[METHOD EXECUTED] get_stock_price\n"
             query = "SELECT price FROM stocks WHERE symbol = '" + stock_symbol + "'"
             res += "[QUERY] " + query + "\n"
-            if ';' in query:
+
+            if ";" in query:
                 res += "[SCRIPT EXECUTION]\n"
                 cur.executescript(query)
             else:
@@ -143,6 +161,7 @@ class DB_CRUD_ops(object):
                 query_outcome = cur.fetchall()
                 for result in query_outcome:
                     res += "[RESULT] " + str(result) + "\n"
+
             return res
 
         except sqlite3.Error as e:
@@ -158,7 +177,7 @@ class DB_CRUD_ops(object):
         con = Connect()
         try:
             path = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(path, 'level-4.db')
+            db_path = os.path.join(path, "level-4.db")
             db_con = con.create_connection(db_path)
             cur = db_con.cursor()
 
@@ -193,12 +212,12 @@ class DB_CRUD_ops(object):
         con = Connect()
         try:
             path = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(path, 'level-4.db')
+            db_path = os.path.join(path, "level-4.db")
             db_con = con.create_connection(db_path)
             cur = db_con.cursor()
 
             res = "[METHOD EXECUTED] exec_multi_query\n"
-            for query in filter(None, query.split(';')):
+            for query in filter(None, query.split(";")):
                 res += "[QUERY]" + query + "\n"
                 query = query.strip()
                 cur.execute(query)
@@ -224,13 +243,13 @@ class DB_CRUD_ops(object):
         con = Connect()
         try:
             path = os.path.dirname(os.path.abspath(__file__))
-            db_path = os.path.join(path, 'level-4.db')
+            db_path = os.path.join(path, "level-4.db")
             db_con = con.create_connection(db_path)
             cur = db_con.cursor()
 
             res = "[METHOD EXECUTED] exec_user_script\n"
             res += "[QUERY] " + query + "\n"
-            if ';' in query:
+            if ";" in query:
                 res += "[SCRIPT EXECUTION]"
                 cur.executescript(query)
                 db_con.commit()
